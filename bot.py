@@ -36,3 +36,19 @@ def ler_manutencoes_amanha():
     df = df.dropna(subset=["DATA PROGRAMADA"])
     amanha = (datetime.now() + timedelta(days=1)).date()
     return df[df["DATA PROGRAMADA"].dt.date == amanha]
+
+#Controle de duplicatas
+
+def ja_foi_enviado(obra_id):
+    try:
+        with open("enviados.txt", "r") as f:
+            return str(obra_id) in f.read()
+    except FileNotFoundError:
+        return False
+
+
+def marcar_como_enviado(obra_id):
+    with open("enviados.txt", "a") as f:
+        f.write(str(obra_id) + "\n")
+
+

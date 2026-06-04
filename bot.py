@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 
 
 #Configuração e conexão com a planilha
@@ -24,3 +25,14 @@ def ler_planilha():
 
 if __name__ == "__main__":
     ler_planilha()
+
+#Filtro de manutenções para amanhã
+
+from datetime import datetime, timedelta
+
+def ler_manutencoes_amanha():
+    df = pd.read_csv(URL_CSV)
+    df["DATA PROGRAMADA"] = pd.to_datetime(df["DATA PROGRAMADA"], dayfirst=True, errors="coerce")
+    df = df.dropna(subset=["DATA PROGRAMADA"])
+    amanha = (datetime.now() + timedelta(days=1)).date()
+    return df[df["DATA PROGRAMADA"].dt.date == amanha]

@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
+from pyproj import Transformer
 
 
 #Configuração e conexão com a planilha
@@ -52,3 +53,21 @@ def marcar_como_enviado(obra_id):
         f.write(str(obra_id) + "\n")
 
 
+#Conversão de coordenadas UTM
+
+transformer = Transformer.from_crs("EPSG:31984", "EPSG:4326", always_xy=True)
+
+def converter_utm(x, y):
+    try:
+        x = str(x).replace(",", ".").strip()
+        y = str(y).replace(",", ".").strip()
+        lon, lat = transformer.transform(float(x), float(y))
+        return lat, lon
+    except Exception:
+        return None, None
+
+
+def maps_link(lat, lon):
+    if lat and lon:
+        return f"https://maps.google.com/?q={lat:.6f},{lon:.6f}"
+    return None

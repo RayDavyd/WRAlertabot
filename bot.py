@@ -1,8 +1,10 @@
 import os
 import pandas as pd
+import asyncio
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from pyproj import Transformer
+from telegram import Bot
 
 
 #Configuração e conexão com a planilha
@@ -24,8 +26,8 @@ def ler_planilha():
     return df
 
 
-if __name__ == "__main__":
-    ler_planilha()
+#if __name__ == "__main__":
+ #   ler_planilha()
 
 #Filtro de manutenções para amanhã
 
@@ -35,7 +37,7 @@ def ler_manutencoes_amanha():
     df = pd.read_csv(URL_CSV)
     df["DATA PROGRAMADA"] = pd.to_datetime(df["DATA PROGRAMADA"], dayfirst=True, errors="coerce")
     df = df.dropna(subset=["DATA PROGRAMADA"])
-    amanha = (datetime.now() + timedelta(days=1)).date()
+    amanha = (datetime.now() + timedelta(days=1)).date() 
     return df[df["DATA PROGRAMADA"].dt.date == amanha]
 
 #Controle de duplicatas
@@ -172,6 +174,25 @@ async def enviar_avisos():
         print(f"  → Obra {obra_id} enviada ✅")
         await asyncio.sleep(1)
 
+#Agendador automatico
 
-        git add bot.py
-git commit -m "feat: envia alertas de manutencao no grupo do Telegram"
+async def main():
+    print("🤖 Bot iniciado! Verificando a cada hora.")
+    print(f"📊 Sheets: docs.google.com/spreadsheets/d/{SHEET_ID}")
+
+    print("Executando a primeira verificação agora...")
+    await enviar_avisos()
+
+    while True:
+        if datetime.now().minute == 0:
+            await enviar_avisos()
+            await asyncio.sleep(60)   
+        else:
+            await asyncio.sleep(30)   
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+#git add bot.py
+git commit -m "feat: adiciona agendador para verificacao automatica a cada hora"

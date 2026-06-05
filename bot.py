@@ -137,5 +137,41 @@ def formatar_mensagem(linha):
 
 
 
-git add bot.py
-git commit -m "feat: formata mensagem de alerta com todos os campos da obra"
+#Envio para o Telegram
+
+async def enviar_avisos():
+    bot = Bot(token=TOKEN)
+
+    try:
+        manutencoes = ler_manutencoes_amanha()
+    except Exception as e:
+        print(f"  ❌ Erro ao ler planilha: {e}")
+        return
+
+    if manutencoes.empty:
+        print(f"[{datetime.now().strftime('%d/%m %H:%M')}] Sem manutenções para amanhã.")
+        return
+
+    print(f"[{datetime.now().strftime('%d/%m %H:%M')}] {len(manutencoes)} manutenção(ões) encontrada(s).")
+
+    for _, linha in manutencoes.iterrows():
+        obra_id = str(linha["OBRA"]).strip()
+
+        if ja_foi_enviado(obra_id):
+            print(f"  → Obra {obra_id} já enviada. Pulando.")
+            continue
+
+        await bot.send_message(
+            chat_id=CHAT_ID,
+            text=formatar_mensagem(linha),
+            parse_mode="Markdown",
+            disable_web_page_preview=True
+        )
+
+        marcar_como_enviado(obra_id)
+        print(f"  → Obra {obra_id} enviada ✅")
+        await asyncio.sleep(1)
+
+
+        git add bot.py
+git commit -m "feat: envia alertas de manutencao no grupo do Telegram"

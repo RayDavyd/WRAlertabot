@@ -194,5 +194,4 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 
-#git add bot.py
-git commit -m "feat: adiciona agendador para verificacao automatica a cada hora"
+    

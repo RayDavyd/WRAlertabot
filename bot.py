@@ -71,3 +71,71 @@ def maps_link(lat, lon):
     if lat and lon:
         return f"https://maps.google.com/?q={lat:.6f},{lon:.6f}"
     return None
+
+
+#Formatação da mensagem
+
+def formatar_mensagem(linha):
+    data_fmt = linha["DATA PROGRAMADA"].strftime("%d/%m/%Y")
+
+    def val(campo):
+        v = str(linha.get(campo, "")).strip()
+        return v if v and v.lower() not in ("nan", "none", "") else None
+
+    # Coordenadas UTM → Lat/Lon
+    lat, lon = converter_utm(
+        val("COORDENADA UTM-X") or "",
+        val("COORDENADA UTM-Y") or ""
+    )
+    link = maps_link(lat, lon)
+
+  
+    prioridade  = f"⭐ *Prioridade:* {val('PRIORIDADE')}\n"         if val("PRIORIDADE")  else ""
+    fiscal      = f"🔍 *Fiscal:* {val('FISCAL')}\n"                  if val("FISCAL")      else ""
+    cont_fiscal = f"📞 *Contato Fiscal:* {val('CONTATO.1')}\n"       if val("CONTATO.1")   else ""
+    obs         = f"📝 *Obs:* {val('CONSIDERAÇÕES DO SERVIÇO')}\n"   if val("CONSIDERAÇÕES DO SERVIÇO") else ""
+
+
+    contato = val("CONTATO") or "—"
+    bloco_contato = (
+        f"📞 *Contato:*\n{contato}\n" if len(contato) > 40
+        else f"📞 *Contato:* {contato}\n"
+    )
+
+    # Coordenadas e link do Maps 
+    if lat and lon:
+        bloco_localizacao = (
+            f"\n"
+            f"🌐 *Coordenadas:*\n"
+            f"   Lat: `{lat:.6f}` | Lon: `{lon:.6f}`\n"
+            f"📌 [Abrir no Google Maps]({link})\n"
+        )
+    else:
+        bloco_localizacao = ""
+
+    return (
+        f"⚡ *Aviso de Manutenção Programada*\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"🔢 *Obra Nº:* `{val('OBRA') or '—'}`\n"
+        f"{prioridade}"
+        f"\n"
+        f"📍 *Local:* {val('LOCAL') or '—'}\n"
+        f"🏠 *Endereço:* {val('ENDEREÇO') or '—'}\n"
+        f"\n"
+        f"📅 *Data:* {data_fmt}\n"
+        f"🕐 *Horário:* {val('HORÁRIO PROGRAMADO') or '—'}\n"
+        f"\n"
+        f"👷 *Encarregado:* {val('ENCARREGADO') or '—'}\n"
+        f"{bloco_contato}"
+        f"{fiscal}"
+        f"{cont_fiscal}"
+        f"{obs}"
+        f"{bloco_localizacao}"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+
+    )
+
+
+
+git add bot.py
+git commit -m "feat: formata mensagem de alerta com todos os campos da obra"

@@ -7,6 +7,7 @@ venv/
 
 # Controle de envios gerado automaticamente
 enviados.txt
+ultimo_envio.txt
 
 # Cache Python
 __pycache__/

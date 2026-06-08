@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-import asyncio
+import asyncio  
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from pyproj import Transformer
@@ -21,14 +21,6 @@ CIDADES_PERMITIDAS = {
     "SÃO DOMINGOS", "MALTA", "CONDADO", "SÃO FRANCISCO",
     "SANTA CRUZ", "CAJAZEIRINHAS", "LASTRO"
 }
-
-def ler_planilha():
-    df = pd.read_csv(URL_CSV)
-    print(f"Planilha carregada: {len(df)} linhas")
-    print(f"Colunas: {list(df.columns)}")
-    return df
-
-
 
 def ler_manutencoes_amanha():
     df = pd.read_csv(URL_CSV)
@@ -99,7 +91,7 @@ def formatar_mensagem(linha):
 
     contato = val("CONTATO") or "—"
     bloco_contato = (
-        f"📞 *Contato:*\n{contato}\n" if len(contato) > 40
+        f"📞 *Contato: *{contato}\n" if len(contato) > 40
         else f"📞 *Contato:* {contato}\n"
     )
 
@@ -130,7 +122,7 @@ def formatar_mensagem(linha):
         f"{bloco_contato}"
         f"{fiscal}"
         f"{cont_fiscal}"
-        f"{obs}"
+        f"\n{obs}"
         f"{bloco_localizacao}"
         f"━━━━━━━━━━━━━━━━━━━━\n"
 
@@ -203,3 +195,9 @@ async def main():
             await asyncio.sleep(61)
         else:
             await asyncio.sleep(30)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+    
+    

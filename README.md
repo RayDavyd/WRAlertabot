@@ -1,1 +1,2 @@
-# WRAlertabot\nBot de notificação de manutenções de energia via Telegram.
+# WRAlertabot 
+Bot de notificação de manutenções de energia via Telegram.

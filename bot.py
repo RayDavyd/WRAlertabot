@@ -175,22 +175,31 @@ async def enviar_avisos():
 
 #Agendador automatico
 
+def ler_ultimo_envio():
+    try:
+        with open("ultimo_envio.txt", "r") as f:
+            return datetime.strptime(f.read().strip(), "%Y-%m-%d").date()
+    except:
+        return None
+
+def salvar_ultimo_envio(data):
+    with open("ultimo_envio.txt", "w") as f:
+        f.write(str(data))
+
 async def main():
-    print("🤖 Bot iniciado! Verificando a cada hora.")
+    print("🤖 Bot iniciado! Enviando alertas todo dia às 05:00.")
     print(f"📊 Sheets: docs.google.com/spreadsheets/d/{SHEET_ID}")
 
-    print("Executando a primeira verificação agora...")
-    await enviar_avisos()
-
     while True:
-        if datetime.now().minute == 0:
-            await enviar_avisos()
-            await asyncio.sleep(60)   
+        agora = datetime.now()
+
+        if agora.hour == 5 and agora.minute == 0:
+            hoje = agora.date()
+
+            if ler_ultimo_envio() != hoje:
+                await enviar_avisos()
+                salvar_ultimo_envio(hoje)
+
+            await asyncio.sleep(61)
         else:
-            await asyncio.sleep(30)   
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-    
+            await asyncio.sleep(30)

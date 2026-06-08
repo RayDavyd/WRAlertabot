@@ -61,3 +61,5 @@ Desenvolvido por alunos do curso de **Análise e Desenvolvimento de Sistemas —
 
 
 ## 📄 Licença
+
+Uso interno — WRLink Telecom.

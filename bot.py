@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-import asyncio
+import asyncio  
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from pyproj import Transformer
@@ -13,32 +13,23 @@ load_dotenv()
 
 TOKEN   = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
-
 SHEET_ID = "1vERB1h8xCrtXWSqQZO0z5pDOmicKj9XSvgOn4xto_Ls"
 GID      = "688165482"
 URL_CSV  = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID}"
-
-
-def ler_planilha():
-    df = pd.read_csv(URL_CSV)
-    print(f"Planilha carregada: {len(df)} linhas")
-    print(f"Colunas: {list(df.columns)}")
-    return df
-
-
-#if __name__ == "__main__":
- #   ler_planilha()
-
-#Filtro de manutenções para amanhã
-
-from datetime import datetime, timedelta
+CIDADES_PERMITIDAS = {
+    "SOUSA", "POMBAL", "VIEIRÓPOLIS", "COREMAS", "SÃO BENTINHO",
+    "SÃO DOMINGOS", "MALTA", "CONDADO", "SÃO FRANCISCO",
+    "SANTA CRUZ", "CAJAZEIRINHAS", "LASTRO"
+}
 
 def ler_manutencoes_amanha():
     df = pd.read_csv(URL_CSV)
     df["DATA PROGRAMADA"] = pd.to_datetime(df["DATA PROGRAMADA"], dayfirst=True, errors="coerce")
     df = df.dropna(subset=["DATA PROGRAMADA"])
-    amanha = (datetime.now() + timedelta(days=1)).date() 
-    return df[df["DATA PROGRAMADA"].dt.date == amanha]
+    amanha = (datetime.now() + timedelta(days=1)).date()
+    df = df[df["DATA PROGRAMADA"].dt.date == amanha]
+    df = df[df["LOCAL"].str.strip().str.upper().isin(CIDADES_PERMITIDAS)]
+    return df
 
 #Controle de duplicatas
 
@@ -100,7 +91,7 @@ def formatar_mensagem(linha):
 
     contato = val("CONTATO") or "—"
     bloco_contato = (
-        f"📞 *Contato:*\n{contato}\n" if len(contato) > 40
+        f"📞 *Contato: *{contato}\n" if len(contato) > 40
         else f"📞 *Contato:* {contato}\n"
     )
 
@@ -131,7 +122,7 @@ def formatar_mensagem(linha):
         f"{bloco_contato}"
         f"{fiscal}"
         f"{cont_fiscal}"
-        f"{obs}"
+        f"\n{obs}"
         f"{bloco_localizacao}"
         f"━━━━━━━━━━━━━━━━━━━━\n"
 
@@ -176,22 +167,37 @@ async def enviar_avisos():
 
 #Agendador automatico
 
+def ler_ultimo_envio():
+    try:
+        with open("ultimo_envio.txt", "r") as f:
+            return datetime.strptime(f.read().strip(), "%Y-%m-%d").date()
+    except:
+        return None
+
+def salvar_ultimo_envio(data):
+    with open("ultimo_envio.txt", "w") as f:
+        f.write(str(data))
+
 async def main():
-    print("🤖 Bot iniciado! Verificando a cada hora.")
+    print("🤖 Bot iniciado! Enviando alertas todo dia às 05:00.")
     print(f"📊 Sheets: docs.google.com/spreadsheets/d/{SHEET_ID}")
 
-    print("Executando a primeira verificação agora...")
-    await enviar_avisos()
-
     while True:
-        if datetime.now().minute == 0:
-            await enviar_avisos()
-            await asyncio.sleep(60)   
+        agora = datetime.now()
+
+        if agora.hour == 5 and agora.minute == 0:
+            hoje = agora.date()
+
+            if ler_ultimo_envio() != hoje:
+                await enviar_avisos()
+                salvar_ultimo_envio(hoje)
+
+            await asyncio.sleep(61)
         else:
-            await asyncio.sleep(30)   
+            await asyncio.sleep(30)
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-
+    
     

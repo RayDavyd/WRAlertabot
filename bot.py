@@ -185,7 +185,7 @@ async def main():
     while True:
         agora = datetime.now()
 
-        if agora.hour == 5 and agora.minute == 0:
+        if agora.hour == 8 and agora.minute == 0:
             hoje = agora.date()
 
             if ler_ultimo_envio() != hoje:

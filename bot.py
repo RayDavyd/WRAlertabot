@@ -31,20 +31,6 @@ def ler_manutencoes_amanha():
     df = df[df["LOCAL"].str.strip().str.upper().isin(CIDADES_PERMITIDAS)]
     return df
 
-#Controle de duplicatas
-
-def ja_foi_enviado(obra_id):
-    try:
-        with open("enviados.txt", "r") as f:
-            return str(obra_id) in f.read()
-    except FileNotFoundError:
-        return False
-
-
-def marcar_como_enviado(obra_id):
-    with open("enviados.txt", "a") as f:
-        f.write(str(obra_id) + "\n")
-
 
 #Conversão de coordenadas UTM
 
@@ -91,7 +77,7 @@ def formatar_mensagem(linha):
 
     contato = val("CONTATO") or "—"
     bloco_contato = (
-        f"📞 *Contato: *{contato}\n" if len(contato) > 40
+        f"📞 *Contato:*\n{contato}\n" if len(contato) > 40
         else f"📞 *Contato:* {contato}\n"
     )
 
@@ -142,7 +128,12 @@ async def enviar_avisos():
         return
 
     if manutencoes.empty:
-        print(f"[{datetime.now().strftime('%d/%m %H:%M')}] Sem manutenções para amanhã.")
+        amanha_fmt = (datetime.now() + timedelta(days=1)).strftime("%d/%m/%Y")
+        print(f"[{datetime.now().strftime('%d/%m %H:%M')}] Sem manutenções para {amanha_fmt}.")
+        await bot.send_message(
+            chat_id=CHAT_ID,
+            text=f"✅ Nenhuma manutenção programada para {amanha_fmt}."
+        )
         return
 
     print(f"[{datetime.now().strftime('%d/%m %H:%M')}] {len(manutencoes)} manutenção(ões) encontrada(s).")
@@ -150,18 +141,12 @@ async def enviar_avisos():
     for _, linha in manutencoes.iterrows():
         obra_id = str(linha["OBRA"]).strip()
 
-        if ja_foi_enviado(obra_id):
-            print(f"  → Obra {obra_id} já enviada. Pulando.")
-            continue
-
         await bot.send_message(
             chat_id=CHAT_ID,
             text=formatar_mensagem(linha),
             parse_mode="Markdown",
             disable_web_page_preview=True
         )
-
-        marcar_como_enviado(obra_id)
         print(f"  → Obra {obra_id} enviada ✅")
         await asyncio.sleep(1)
 
@@ -198,6 +183,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+   asyncio.run(enviar_avisos())
+
     
     

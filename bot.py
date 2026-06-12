@@ -183,7 +183,7 @@ async def main():
 
 
 if __name__ == "__main__":
-   asyncio.run(enviar_avisos())
+    asyncio.run(main())
 
     
     

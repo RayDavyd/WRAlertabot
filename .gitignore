@@ -2,7 +2,7 @@
 venv/
 .venv/
 
-# Variáveis de ambiente
+# Variáveis de ambiente/nao podem subir
 .env
 
 # Controle de envios gerado automaticamente
